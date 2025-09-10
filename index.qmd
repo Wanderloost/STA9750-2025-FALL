@@ -1,0 +1,18 @@
+---
+title: "Welcome to my personal page!"
+---
+
+## Who am I? ##
+My name is Ryan Ram and I am a current Masters student of Baruch College with my focus in data analytics. I enjoy the world of data and seeing all of the capabilities that companies can attain through the usage of data. In my free time I enjoy working out and playing video games. Maybe once day I will end up working for a video game company as that would be a fun experience. 
+
+## What I can do: ##
+[Resume](https://github.com/Wanderloost/STA9750-2025-FALL/blob/main/Ryan-Ram-Resume.pdf)
+
+### ** Note that this website is still under construction ** ###
+
+```{r}
+#| include: false
+1+1
+```
+--------------
+Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
