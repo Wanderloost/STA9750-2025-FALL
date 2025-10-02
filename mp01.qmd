@@ -1,0 +1,67 @@
+---
+title: "Netflix Top 10 Analysis"
+author: "Your Name"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This mini-project uses Netflix’s TuDum *Top 10* dataset to explore patterns in global and country-level streaming activity.  
+The analysis addresses ten specific questions about Netflix’s reach, popular shows and films, and viewership patterns.  
+Results are presented in narrative sentences with inline R code, ensuring clarity and reproducibility.  
+
+---
+
+## Data Acquisition
+
+We begin by downloading the Netflix Global and Country Top 10 datasets.  
+Data are stored in a local `data/mp01` directory.  
+
+```{r}
+# Packages
+library(dplyr)
+library(readr)
+library(stringr)
+library(lubridate)
+library(tidyr)
+library(scales)
+
+# Ensure directory exists
+if (!dir.exists(file.path("data", "mp01"))) {
+  dir.create(file.path("data", "mp01"), showWarnings = FALSE, recursive = TRUE)
+}
+
+# File paths
+GLOBAL_TOP_10_FILENAME  <- file.path("data", "mp01", "global_top10_alltime.csv")
+COUNTRY_TOP_10_FILENAME <- file.path("data", "mp01", "country_top10_alltime.csv")
+
+# Download if missing
+if (!file.exists(GLOBAL_TOP_10_FILENAME)) {
+  download.file("https://www.netflix.com/tudum/top10/data/all-weeks-global.tsv",
+                destfile = GLOBAL_TOP_10_FILENAME)
+}
+if (!file.exists(COUNTRY_TOP_10_FILENAME)) {
+  download.file("https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv",
+                destfile = COUNTRY_TOP_10_FILENAME)
+}
+
+# Read data
+GLOBAL_TOP_10  <- read_tsv(GLOBAL_TOP_10_FILENAME)
+COUNTRY_TOP_10 <- read_tsv(COUNTRY_TOP_10_FILENAME, na = "N/A")
+
+# Fix N/A season titles in GLOBAL
+GLOBAL_TOP_10 <- GLOBAL_TOP_10 |>
+  mutate(season_title = if_else(season_title == "N/A", NA_character_, season_title))
+
+
+
+
+
+

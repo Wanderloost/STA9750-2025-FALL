@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Your Name">
 
-<title>Welcome to my personal page! – STA 9750 Submission Material</title>
+<title>Netflix Top 10 Analysis – STA 9750 Submission Material</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -71,7 +72,7 @@ ul.task-list li input[type="checkbox"] {
 
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -91,19 +92,40 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">0.1</span> Introduction</a></li>
+  <li><a href="#data-acquisition" id="toc-data-acquisition" class="nav-link" data-scroll-target="#data-acquisition"><span class="header-section-number">0.2</span> Data Acquisition</a></li>
+  <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages"><span class="header-section-number">1</span> Packages</a></li>
+  <li><a href="#ensure-directory-exists" id="toc-ensure-directory-exists" class="nav-link" data-scroll-target="#ensure-directory-exists"><span class="header-section-number">2</span> Ensure directory exists</a></li>
+  <li><a href="#file-paths" id="toc-file-paths" class="nav-link" data-scroll-target="#file-paths"><span class="header-section-number">3</span> File paths</a></li>
+  <li><a href="#download-if-missing" id="toc-download-if-missing" class="nav-link" data-scroll-target="#download-if-missing"><span class="header-section-number">4</span> Download if missing</a></li>
+  <li><a href="#read-data" id="toc-read-data" class="nav-link" data-scroll-target="#read-data"><span class="header-section-number">5</span> Read data</a></li>
+  <li><a href="#fix-na-season-titles-in-global" id="toc-fix-na-season-titles-in-global" class="nav-link" data-scroll-target="#fix-na-season-titles-in-global"><span class="header-section-number">6</span> Fix N/A season titles in GLOBAL</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Welcome to my personal page!</h1>
+<h1 class="title">Netflix Top 10 Analysis</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Your Name </p>
+          </div>
+  </div>
     
   
     
@@ -114,20 +136,43 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="who-am-i" class="level2">
-<h2 class="anchored" data-anchor-id="who-am-i">Who am I?</h2>
-<p>My name is Ryan Ram and I am a current Masters student of Baruch College with my focus in data analytics. I enjoy the world of data and seeing all of the capabilities that companies can attain through the usage of data. In my free time I enjoy working out and playing video games. Maybe once day I will end up working for a video game company as that would be a fun experience.</p>
-</section>
-<section id="what-i-can-do" class="level2">
-<h2 class="anchored" data-anchor-id="what-i-can-do">What I can do:</h2>
-<p><a href="https://github.com/Wanderloost/STA9750-2025-FALL/blob/main/Ryan-Ram-Resume.pdf">Resume</a></p>
-<section id="note-that-this-website-is-still-under-construction" class="level3">
-<h3 class="anchored" data-anchor-id="note-that-this-website-is-still-under-construction">** Note that this website is still under construction **</h3>
+<section id="introduction" class="level2" data-number="0.1">
+<h2 data-number="0.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">0.1</span> Introduction</h2>
+<p>This mini-project uses Netflix’s TuDum <em>Top 10</em> dataset to explore patterns in global and country-level streaming activity.<br>
+The analysis addresses ten specific questions about Netflix’s reach, popular shows and films, and viewership patterns.<br>
+Results are presented in narrative sentences with inline R code, ensuring clarity and reproducibility.</p>
 <hr>
-<p>Last Updated: Tuesday 09 30, 2025 at 17:54PM</p>
-
-
 </section>
+<section id="data-acquisition" class="level2" data-number="0.2">
+<h2 data-number="0.2" class="anchored" data-anchor-id="data-acquisition"><span class="header-section-number">0.2</span> Data Acquisition</h2>
+<p>We begin by downloading the Netflix Global and Country Top 10 datasets.<br>
+Data are stored in a local <code>data/mp01</code> directory.</p>
+</section>
+<section id="packages" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Packages</h1>
+<p>library(dplyr) library(readr) library(stringr) library(lubridate) library(tidyr) library(scales)</p>
+</section>
+<section id="ensure-directory-exists" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Ensure directory exists</h1>
+<p>if (!dir.exists(file.path(“data”, “mp01”))) { dir.create(file.path(“data”, “mp01”), showWarnings = FALSE, recursive = TRUE) }</p>
+</section>
+<section id="file-paths" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> File paths</h1>
+<p>GLOBAL_TOP_10_FILENAME &lt;- file.path(“data”, “mp01”, “global_top10_alltime.csv”) COUNTRY_TOP_10_FILENAME &lt;- file.path(“data”, “mp01”, “country_top10_alltime.csv”)</p>
+</section>
+<section id="download-if-missing" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Download if missing</h1>
+<p>if (!file.exists(GLOBAL_TOP_10_FILENAME)) { download.file(“https://www.netflix.com/tudum/top10/data/all-weeks-global.tsv”, destfile = GLOBAL_TOP_10_FILENAME) } if (!file.exists(COUNTRY_TOP_10_FILENAME)) { download.file(“https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv”, destfile = COUNTRY_TOP_10_FILENAME) }</p>
+</section>
+<section id="read-data" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Read data</h1>
+<p>GLOBAL_TOP_10 &lt;- read_tsv(GLOBAL_TOP_10_FILENAME) COUNTRY_TOP_10 &lt;- read_tsv(COUNTRY_TOP_10_FILENAME, na = “N/A”)</p>
+</section>
+<section id="fix-na-season-titles-in-global" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Fix N/A season titles in GLOBAL</h1>
+<p>GLOBAL_TOP_10 &lt;- GLOBAL_TOP_10 |&gt; mutate(season_title = if_else(season_title == “N/A”, NA_character_, season_title))</p>
+
+
 </section>
 
 </main> <!-- /main -->

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Welcome to my personal page! – STA 9750 Submission Material</title>
+<title>MiniProject_01 – STA 9750 Submission Material</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -68,6 +68,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -97,7 +126,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Welcome to my personal page!</h1>
+<h1 class="title">MiniProject_01</h1>
 </div>
 
 
@@ -114,17 +143,102 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="who-am-i" class="level2">
-<h2 class="anchored" data-anchor-id="who-am-i">Who am I?</h2>
-<p>My name is Ryan Ram and I am a current Masters student of Baruch College with my focus in data analytics. I enjoy the world of data and seeing all of the capabilities that companies can attain through the usage of data. In my free time I enjoy working out and playing video games. Maybe once day I will end up working for a video game company as that would be a fun experience.</p>
+<section id="answers" class="level2">
+<h2 class="anchored" data-anchor-id="answers">Answers</h2>
+<ol type="1">
+<li><p>Netflix operates in <strong><code>r n_countries</code></strong> countries.</p></li>
+<li><p>The non-English film with the most cumulative global Top-10 weeks is <strong><code>r ne_film_title</code></strong>, with <strong><code>r ne_film_weeks</code></strong> weeks.</p></li>
+<li><p>The longest film to appear in the global Top 10 is <strong><code>r longest_film_title</code></strong>, with a runtime of <strong><code>r longest_film_minutes</code></strong> minutes.</p></li>
+<li><p>By category, the programs with the most total global hours are: <strong><code>r top_by_cat_str</code></strong>.</p></li>
+<li><p>The TV show with the longest consecutive run in a single country’s Top 10 is <strong><code>r longest_tv_title</code></strong> (season <strong><code>r longest_tv_season</code></strong>) with <strong><code>r longest_tv_weeks</code></strong> weeks in <strong><code>r longest_tv_country</code></strong>.</p></li>
+<li><p>The only country with fewer than 200 weeks of service history is <strong><code>r cease_country</code></strong> (<strong><code>r cease_weeks</code></strong> weeks), with operations ceasing on <strong><code>r cease_date</code></strong>.</p></li>
+<li><p>Across all seasons, <em>Squid Game</em> accumulated <strong><code>r scales::comma(squid_hours)</code></strong> hours of global viewership.</p></li>
+<li><p>In 2021, <em>Red Notice</em> received approximately <strong><code>r scales::comma(round(red_notice_views_2021))</code></strong> views (estimated by dividing total hours by its 1h58m runtime).</p></li>
+<li><p>In the United States, <strong><code>r n_us_late_ascenders</code></strong> films debuted below #1 but later reached #1; the most recent was <strong><code>r most_recent_ascender_title</code></strong> (week of <strong><code>r most_recent_ascender_week</code></strong>).</p></li>
+<li><p>The widest Top-10 debut was <strong><code>r debut_spread_title</code></strong> (season <strong><code>r debut_spread_season</code></strong>) appearing in <strong><code>r debut_spread_n</code></strong> countries during the week of <strong><code>r debut_spread_week</code></strong>.</p></li>
+</ol>
 </section>
-<section id="what-i-can-do" class="level2">
-<h2 class="anchored" data-anchor-id="what-i-can-do">What I can do:</h2>
-<p><a href="https://github.com/Wanderloost/STA9750-2025-FALL/blob/main/Ryan-Ram-Resume.pdf">Resume</a></p>
-<section id="note-that-this-website-is-still-under-construction" class="level3">
-<h3 class="anchored" data-anchor-id="note-that-this-website-is-still-under-construction">** Note that this website is still under construction **</h3>
-<hr>
-<p>Last Updated: Tuesday 09 30, 2025 at 17:54PM</p>
+<section id="initial-setup" class="level2">
+<h2 class="anchored" data-anchor-id="initial-setup">Initial Setup</h2>
+<p>if(!require(“tidyverse”)) install.packages(“tidyverse”) library(readr) library(dplyr)</p>
+<p>GLOBAL_TOP_10 &lt;- read_tsv(GLOBAL_TOP_10_FILENAME)</p>
+<p>str(GLOBAL_TOP_10) glimpse(GLOBAL_TOP_10)</p>
+</section>
+<section id="preparing-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-the-data">Preparing the data</h2>
+<p>GLOBAL_TOP_10 &lt;- GLOBAL_TOP_10 |&gt; mutate(season_title = if_else(season_title == “N/A”, NA_character_, season_title))</p>
+<p>COUNTRY_TOP_10 &lt;- read_tsv(COUNTRY_TOP_10_FILENAME, na = “N/A”)</p>
+</section>
+<section id="exploring-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="exploring-the-data">Exploring the data</h2>
+<p>install.packages(“DT”) library(DT) GLOBAL_TOP_10 |&gt; head(n=20) |&gt; datatable(options=list(searching=FALSE, info=FALSE))</p>
+<p>library(stringr) format_titles &lt;- function(df){ colnames(df) &lt;- str_replace_all(colnames(df), “_“,” “) |&gt; str_to_title() df }</p>
+<p>GLOBAL_TOP_10 |&gt; format_titles() |&gt; head(n=20) |&gt; datatable(options=list(searching=FALSE, info=FALSE)) |&gt; formatRound(c(‘Weekly Hours Viewed’, ‘Weekly Views’))</p>
+<p>GLOBAL_TOP_10 |&gt; select(-season_title) |&gt;#| label: qa-setup #| echo: false #| message: false #| warning: false</p>
+<p>library(dplyr) library(stringr) library(lubridate) library(glue) library(tidyr)</p>
+</section>
+<section id="how-many-different-countries" class="level2">
+<h2 class="anchored" data-anchor-id="how-many-different-countries">1) How many different countries?</h2>
+<p>n_countries &lt;- COUNTRY_TOP_10 %&gt;% distinct(country_name) %&gt;% count() %&gt;% pull(n)</p>
+</section>
+<section id="non-english-film-with-most-cumulative-weeks-in-the-global-top-10" class="level2">
+<h2 class="anchored" data-anchor-id="non-english-film-with-most-cumulative-weeks-in-the-global-top-10">2) Non-English film with most cumulative weeks in the global Top 10</h2>
+<p>ne_film &lt;- GLOBAL_TOP_10 %&gt;% filter(category == “Films (Non-English”)) %&gt;% group_by(show_title) %&gt;% summarise(max_weeks = max(cumulative_weeks_in_top_10, na.rm = TRUE), .groups=“drop”) %&gt;% arrange(desc(max_weeks), show_title) %&gt;% slice(1)</p>
+<p>ne_film_title &lt;- ne_film<span class="math inline">\(show_title
+ne_film_weeks &lt;- ne_film\)</span>max_weeks</p>
+</section>
+<section id="longest-film-english-or-non-english-ever-in-global-top-10-runtime-in-minutes" class="level2">
+<h2 class="anchored" data-anchor-id="longest-film-english-or-non-english-ever-in-global-top-10-runtime-in-minutes">3) Longest film (English or Non-English) ever in global Top 10 (runtime in minutes)</h2>
+<p>longest_film &lt;- GLOBAL_TOP_10 %&gt;% filter(category %in% c(“Films (English)”, “Films (Non-English)”), !is.na(runtime)) %&gt;% # runtime not provided before a date slice_max(order_by = runtime, n = 1, with_ties = FALSE) %&gt;% mutate(runtime_minutes = round(runtime * 60))</p>
+<p>longest_film_title &lt;- longest_film<span class="math inline">\(show_title
+longest_film_minutes &lt;- longest_film\)</span>runtime_minutes</p>
+</section>
+<section id="for-each-category-program-with-most-total-global-hours" class="level2">
+<h2 class="anchored" data-anchor-id="for-each-category-program-with-most-total-global-hours">4) For each category, program with most total global hours</h2>
+<p>top_by_cat &lt;- GLOBAL_TOP_10 %&gt;% group_by(category, show_title) %&gt;% summarise(total_hours = sum(weekly_hours_viewed, na.rm = TRUE), .groups=“drop_last”) %&gt;% slice_max(order_by = total_hours, n = 1, with_ties = FALSE) %&gt;% ungroup() %&gt;% arrange(category)</p>
+<p>top_by_cat_str &lt;- top_by_cat %&gt;% mutate(line = glue(“{category}: {show_title} ({scales::comma(total_hours)} hours)”)) %&gt;% pull(line) %&gt;% paste(collapse = “;”)</p>
+</section>
+<section id="tv-show-with-the-longest-consecutive-run-in-a-countrys-top-10" class="level2">
+<h2 class="anchored" data-anchor-id="tv-show-with-the-longest-consecutive-run-in-a-countrys-top-10">5) TV show with the longest consecutive run in a country’s Top 10</h2>
+</section>
+<section id="compute-longest-streak-weeks-exactly-7-days-apart-per-countryshowseason" class="level1">
+<h1>Compute longest streak (weeks exactly 7 days apart) per country/show/season</h1>
+<p>tv_streaks &lt;- COUNTRY_TOP_10 %&gt;% filter(str_detect(category, “TV”), weekly_rank &lt;= 10) %&gt;% arrange(country_name, show_title, season_title, week) %&gt;% group_by(country_name, show_title, season_title) %&gt;% mutate( new_run = if_else(is.na(lag(week)) | week != lag(week) + 7, 1L, 0L), run_id = cumsum(replace_na(new_run, 1L)) ) %&gt;% group_by(country_name, show_title, season_title, run_id, .add = TRUE) %&gt;% summarise(streak_weeks = n(), .groups = “drop”)</p>
+<p>longest_tv_streak &lt;- tv_streaks %&gt;% arrange(desc(streak_weeks), country_name, show_title, season_title) %&gt;% slice(1)</p>
+<p>longest_tv_title &lt;- longest_tv_streak<span class="math inline">\(show_title
+longest_tv_season &lt;- longest_tv_streak\)</span>season_title longest_tv_country&lt;- longest_tv_streak<span class="math inline">\(country_name
+longest_tv_weeks  &lt;- longest_tv_streak\)</span>streak_weeks</p>
+<section id="country-with-200-weeks-of-service-history-and-when-it-ceased-operations" class="level2">
+<h2 class="anchored" data-anchor-id="country-with-200-weeks-of-service-history-and-when-it-ceased-operations">6) Country with &lt; 200 weeks of service history and when it ceased operations</h2>
+<p>country_weeks &lt;- COUNTRY_TOP_10 %&gt;% group_by(country_name) %&gt;% summarise(weeks_of_data = n_distinct(week), last_week = max(week), .groups=“drop”) %&gt;% arrange(weeks_of_data)</p>
+<p>short_service &lt;- country_weeks %&gt;% filter(weeks_of_data &lt; 200) %&gt;% slice(1)</p>
+<p>cease_country &lt;- short_service<span class="math inline">\(country_name
+cease_weeks   &lt;- short_service\)</span>weeks_of_data cease_date &lt;- short_service$last_week</p>
+</section>
+<section id="total-global-viewership-of-squid-game-all-seasons" class="level2">
+<h2 class="anchored" data-anchor-id="total-global-viewership-of-squid-game-all-seasons">7) Total global viewership of Squid Game (all seasons)</h2>
+<p>squid_hours &lt;- GLOBAL_TOP_10 %&gt;% filter(str_detect(show_title, fixed(“Squid Game”, ignore_case = TRUE))) %&gt;% summarise(total_hours = sum(weekly_hours_viewed, na.rm = TRUE)) %&gt;% pull(total_hours)</p>
+</section>
+<section id="red-notice-estimated-views-in-2021-views-total_hours-runtime_hours" class="level2">
+<h2 class="anchored" data-anchor-id="red-notice-estimated-views-in-2021-views-total_hours-runtime_hours">8) Red Notice estimated views in 2021 (views ≈ total_hours / runtime_hours)</h2>
+<p>red_notice_views_2021 &lt;- GLOBAL_TOP_10 %&gt;% filter(show_title == “Red Notice”, year(week) == 2021) %&gt;% summarise(total_hours = sum(weekly_hours_viewed, na.rm = TRUE)) %&gt;% mutate(runtime_hours = 1 + 58/60, est_views = total_hours / runtime_hours) %&gt;% pull(est_views)</p>
+</section>
+<section id="films-that-debuted-below-1-in-us-but-later-hit-1-how-many-and-most-recent" class="level2">
+<h2 class="anchored" data-anchor-id="films-that-debuted-below-1-in-us-but-later-hit-1-how-many-and-most-recent">9) Films that debuted below #1 in US but later hit #1; how many and most recent</h2>
+<p>us_late_ascenders &lt;- COUNTRY_TOP_10 %&gt;% filter(country_name == “United States”, str_detect(category, “Films”), weekly_rank &lt;= 10) %&gt;% group_by(show_title) %&gt;% summarise( hit_one = any(weekly_rank == 1, na.rm = TRUE), debut_rank= min(weekly_rank, na.rm = TRUE), debut_week= min(week, na.rm = TRUE), last_week = max(week, na.rm = TRUE), .groups = “drop” ) %&gt;% filter(hit_one, debut_rank &gt; 1) %&gt;% arrange(desc(last_week))</p>
+<p>n_us_late_ascenders &lt;- nrow(us_late_ascenders) most_recent_ascender_title &lt;- us_late_ascenders %&gt;% slice(1) %&gt;% pull(show_title) most_recent_ascender_week &lt;- us_late_ascenders %&gt;% slice(1) %&gt;% pull(last_week)</p>
+</section>
+<section id="tv-showseason-that-hit-top-10-in-the-most-countries-in-its-debut-week" class="level2">
+<h2 class="anchored" data-anchor-id="tv-showseason-that-hit-top-10-in-the-most-countries-in-its-debut-week">10) TV show/season that hit Top 10 in the most countries in its debut week</h2>
+<p>debut_spread &lt;- COUNTRY_TOP_10 %&gt;% filter(weekly_rank &lt;= 10) %&gt;% group_by(show_title, season_title) %&gt;% summarise(debut_week = min(week, na.rm = TRUE), .groups=“drop”) %&gt;% inner_join( COUNTRY_TOP_10 %&gt;% filter(weekly_rank &lt;= 10), by = c(“show_title”, “season_title”, “debut_week” = “week”) ) %&gt;% group_by(show_title, season_title, debut_week) %&gt;% summarise(num_countries = n_distinct(country_name), .groups = “drop”) %&gt;% arrange(desc(num_countries), show_title, season_title) %&gt;% slice(1)</p>
+<p>debut_spread_title &lt;- debut_spread<span class="math inline">\(show_title
+debut_spread_season  &lt;- debut_spread\)</span>season_title debut_spread_week &lt;- debut_spread<span class="math inline">\(debut_week
+debut_spread_n       &lt;- debut_spread\)</span>num_countries</p>
+<pre><code>format_titles() |&gt;
+head(n=20) |&gt;
+datatable(options=list(searching=FALSE, info=FALSE)) |&gt;
+formatRound(c('Weekly Hours Viewed', 'Weekly Views'))</code></pre>
+<p>GLOBAL_TOP_10 |&gt; mutate(<code>runtime_(minutes)</code> = round(60 * runtime)) |&gt; select(-season_title, -runtime) |&gt; format_titles() |&gt; head(n=20) |&gt; datatable(options=list(searching=FALSE, info=FALSE)) |&gt; formatRound(c(‘Weekly Hours Viewed’, ‘Weekly Views’))</p>
 
 
 </section>
