@@ -299,41 +299,62 @@ Over four seasons, *Stranger Things* has become one of Netflix’s most successf
 #| message: false
 #| warning: false
 
-# Filter for India only
-india <- COUNTRY_TOP_10 %>%
-  filter(country_name == "India")
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(scales)
 
-# Separate Hindi-language content (assume category includes "Non-English" and titles in Hindi)
-# You may need to adapt filtering logic depending on your dataset's metadata.
-india_hindi <- india %>%
-  filter(str_detect(show_title, "Hindi") | str_detect(category, "Non-English"))
+# Titles that charted in India (Non-English proxy)
+india_titles <- COUNTRY_TOP_10 %>%
+  filter(country_name == "India",
+         str_detect(category, "Non-English")) %>%
+  distinct(show_title, season_title, category)
 
-# Total hours viewed for Hindi-language titles in India
-total_india_hours <- sum(india_hindi$weekly_hours_viewed, na.rm = TRUE)
+# Exclude titles that also charted in the US
+us_titles <- COUNTRY_TOP_10 %>%
+  filter(country_name == "United States") %>%
+  distinct(show_title, season_title)
 
-# Number of unique Hindi-language titles
-n_hindi_titles <- n_distinct(india_hindi$show_title)
+india_not_us_titles <- india_titles %>%
+  anti_join(us_titles, by = c("show_title", "season_title"))
 
-# Long-term trend: group by year to see growth
-india_growth <- india_hindi %>%
-  mutate(year = year(week)) %>%
+# Bring in hours from GLOBAL_TOP_10 (treating as India viewing)
+india_hours_df <- GLOBAL_TOP_10 %>%
+  filter(str_detect(category, "Non-English")) %>%
+  semi_join(india_not_us_titles, by = c("show_title", "season_title")) %>%
+  mutate(year = year(week))
+
+# Totals
+total_india_hours <- sum(india_hours_df$weekly_hours_viewed, na.rm = TRUE)
+n_hindi_titles    <- n_distinct(india_hours_df$show_title)
+
+# Yearly growth
+india_growth <- india_hours_df %>%
   group_by(year) %>%
-  summarise(yearly_hours = sum(weekly_hours_viewed, na.rm = TRUE),
-            .groups = "drop")
+  summarise(yearly_hours = sum(weekly_hours_viewed, na.rm = TRUE), .groups = "drop")
 
-# Most popular Hindi title (by hours in India that did not chart in US)
-popular_hindi_only <- india_hindi %>%
-  anti_join(
-    COUNTRY_TOP_10 %>% filter(country_name == "United States"),
-    by = c("show_title", "season_title")
-  ) %>%
-  group_by(show_title) %>%
-  summarise(total_hours = sum(weekly_hours_viewed, na.rm = TRUE), .groups = "drop") %>%
-  arrange(desc(total_hours)) %>%
-  slice(1)
+# Most popular Hindi-only title
+if (nrow(india_hours_df) > 0) {
+  popular_hindi_only <- india_hours_df %>%
+    group_by(show_title) %>%
+    summarise(total_hours = sum(weekly_hours_viewed, na.rm = TRUE), .groups = "drop") %>%
+    arrange(desc(total_hours)) %>%
+    slice(1)
 
-popular_hindi_title <- popular_hindi_only$show_title
-popular_hindi_hours <- popular_hindi_only$total_hours
+  popular_hindi_title <- popular_hindi_only$show_title
+  popular_hindi_hours <- popular_hindi_only$total_hours
+} else {
+  popular_hindi_title <- NA_character_
+  popular_hindi_hours <- NA_real_
+}
+
+# Quick trend string (optional inline use)
+trend_str <- india_growth %>%
+  arrange(year) %>%
+  mutate(line = paste0(year, ": ", comma(yearly_hours), " hrs")) %>%
+  pull(line) %>%
+  paste(collapse = "; ")
+
 
 ```
 
