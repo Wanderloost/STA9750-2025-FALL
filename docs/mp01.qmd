@@ -1,6 +1,6 @@
 ---
 title: "Netflix Top 10 Analysis"
-author: "Your Name"
+author: "Ryan Ram"
 format:
   html:
     toc: true
@@ -290,7 +290,7 @@ peer_str <- paste0(top_other$show_title,
 
 Over four seasons, *Stranger Things* has become one of Netflix’s most successful series worldwide. Across its run, the show has been watched for more than **`r scales::comma(total_stranger_hours)`** hours, spending **`r total_stranger_weeks`** weeks in the global Top 10 and appearing in the charts of **`r total_stranger_countries`** countries. Compared to other English language hits like *Wednesday*, *Bridgerton*, and *The Witcher*, *Stranger Things* ranks **`r st_rank_en`** overall for total hours viewed, underscoring its unique staying power. With its fifth and final season arriving in late 2025, the series is set to make history once again as audiences around the world return to Hawkins for one last trip into the Upside Down.
 
-## Task 6: 
+## Task 6: Netflix in India Press Release
 
 ```{r}
 
