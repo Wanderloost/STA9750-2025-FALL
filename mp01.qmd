@@ -15,7 +15,6 @@ execute:
 
 This mini-project uses Netflix’s TuDum *Top 10* dataset to explore patterns in global and country-level streaming activity.  
 The analysis addresses ten specific questions about Netflix’s reach, popular shows and films, and viewership patterns.  
-Results are presented in narrative sentences with inline R code, ensuring clarity and reproducibility.  
 
 ---
 
