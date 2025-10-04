@@ -355,7 +355,6 @@ trend_str <- india_growth %>%
   pull(line) %>%
   paste(collapse = "; ")
 
-
 ```
 
 
