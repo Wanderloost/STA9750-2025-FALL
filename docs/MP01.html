@@ -141,6 +141,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#task-6-netflix-in-india-press-release" id="toc-task-6-netflix-in-india-press-release" class="nav-link" data-scroll-target="#task-6-netflix-in-india-press-release">Task 6: Netflix in India Press Release</a></li>
   </ul></li>
+  <li><a href="#netflix-india-surges-ahead-hindi-hits-propel-record-engagement-in-the-worlds-largest-market" id="toc-netflix-india-surges-ahead-hindi-hits-propel-record-engagement-in-the-worlds-largest-market" class="nav-link" data-scroll-target="#netflix-india-surges-ahead-hindi-hits-propel-record-engagement-in-the-worlds-largest-market">Netflix India Surges Ahead: Hindi Hits Propel Record Engagement in the World’s Largest Market</a>
+  <ul class="collapse">
+  <li><a href="#task-7-netflix-press-release-open-topic" id="toc-task-7-netflix-press-release-open-topic" class="nav-link" data-scroll-target="#task-7-netflix-press-release-open-topic">Task 7: Netflix Press Release (Open Topic)</a></li>
+  </ul></li>
+  <li><a href="#netflix-celebrates-global-success-of-non-english-films-as-viewership-surges-worldwide" id="toc-netflix-celebrates-global-success-of-non-english-films-as-viewership-surges-worldwide" class="nav-link" data-scroll-target="#netflix-celebrates-global-success-of-non-english-films-as-viewership-surges-worldwide">Netflix Celebrates Global Success of Non-English Films as Viewership Surges Worldwide</a></li>
   </ul>
 </nav>
     </div>
@@ -437,6 +442,20 @@ Data are stored in a local <code>data/mp01</code> directory.</p>
 <section id="stranger-things-returns-netflixs-global-phenomenon-prepares-for-its-fifth-and-final-season" class="level1">
 <h1>Stranger Things Returns: Netflix’s Global Phenomenon Prepares for Its Fifth and Final Season</h1>
 <p>Over four seasons, <em>Stranger Things</em> has become one of Netflix’s most successful series worldwide. Across its run, the show has been watched for more than <strong>2,967,980,000</strong> hours, spending <strong>20</strong> weeks in the global Top 10 and appearing in the charts of <strong>93</strong> countries. Compared to other English language hits like <em>Wednesday</em>, <em>Bridgerton</em>, and <em>The Witcher</em>, <em>Stranger Things</em> ranks <strong>1</strong> overall for total hours viewed, underscoring its unique staying power. With its fifth and final season arriving in late 2025, the series is set to make history once again as audiences around the world return to Hawkins for one last trip into the Upside Down.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-stranger-seasons" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-stranger-seasons-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mp01_files/figure-html/fig-stranger-seasons-1.png" class="img-fluid figure-img" width="864">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-stranger-seasons-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Stranger Things — Global Viewing by Season (Hours) and Longevity (Weeks)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
 <section id="task-6-netflix-in-india-press-release" class="level2">
 <h2 class="anchored" data-anchor-id="task-6-netflix-in-india-press-release">Task 6: Netflix in India Press Release</h2>
 <div class="cell">
@@ -501,9 +520,141 @@ Data are stored in a local <code>data/mp01</code> directory.</p>
 <span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(line) <span class="sc">%&gt;%</span></span>
 <span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="at">collapse =</span> <span class="st">"; "</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-
-
 </section>
+</section>
+<section id="netflix-india-surges-ahead-hindi-hits-propel-record-engagement-in-the-worlds-largest-market" class="level1">
+<h1>Netflix India Surges Ahead: Hindi Hits Propel Record Engagement in the World’s Largest Market</h1>
+<p>With India now the world’s most populated nation, Netflix’s Hindi-language slate has become a powerful growth engine: viewers in India are estimated to have watched more than <strong>0</strong> hours of local, non-English films and series, spanning <strong>0</strong> unique titles under this analysis. Standout success <strong>NA</strong> alone amassed <strong>NA</strong> hours in India while never appearing in the U.S. Top 10—evidence of distinctive regional demand. Year-over-year viewing has shown sustained momentum (****), underscoring Netflix’s long-term opportunity to expand its customer base and invest in premium Hindi originals that resonate with audiences nationwide.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-india-growth</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Estimated Hindi/Non-English Viewing in India by Year (Hours)"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 9</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper: safe coalesce of season title so NA == NA across joins</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>norm_key <span class="ot">&lt;-</span> <span class="cf">function</span>(df) {</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">season_key =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(season_title) <span class="sc">|</span> season_title <span class="sc">==</span> <span class="st">""</span>, <span class="st">"__NONE__"</span>, season_title))</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) Titles that charted in India (proxy: Non-English)</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>india_titles_raw <span class="ot">&lt;-</span> COUNTRY_TOP_10 <span class="sc">%&gt;%</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(country_name <span class="sc">==</span> <span class="st">"India"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>         <span class="fu">str_detect</span>(category, <span class="st">"Non-English"</span>))</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co"># If that yielded nothing (rare), fall back to "TV/Films (Non-English)" wording variants</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nrow</span>(india_titles_raw) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  india_titles_raw <span class="ot">&lt;-</span> COUNTRY_TOP_10 <span class="sc">%&gt;%</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(country_name <span class="sc">==</span> <span class="st">"India"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>           <span class="fu">str_detect</span>(category, <span class="st">"Non-English|Films </span><span class="sc">\\</span><span class="st">(Non-English</span><span class="sc">\\</span><span class="st">)|TV </span><span class="sc">\\</span><span class="st">(Non-English</span><span class="sc">\\</span><span class="st">)"</span>))</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>india_titles <span class="ot">&lt;-</span> india_titles_raw <span class="sc">%&gt;%</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(show_title, season_title) <span class="sc">%&gt;%</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">norm_key</span>()</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) Exclude titles that charted in the US (per hint)</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>us_titles <span class="ot">&lt;-</span> COUNTRY_TOP_10 <span class="sc">%&gt;%</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(country_name <span class="sc">==</span> <span class="st">"United States"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(show_title, season_title) <span class="sc">%&gt;%</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">norm_key</span>()</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>india_not_us <span class="ot">&lt;-</span> india_titles <span class="sc">%&gt;%</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(us_titles, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"show_title"</span>, <span class="st">"season_key"</span>))</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) Pull hours from GLOBAL (Non-English rows) and match by show + season_key</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>global_ne <span class="ot">&lt;-</span> GLOBAL_TOP_10 <span class="sc">%&gt;%</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(category, <span class="st">"Non-English|Films </span><span class="sc">\\</span><span class="st">(Non-English</span><span class="sc">\\</span><span class="st">)|TV </span><span class="sc">\\</span><span class="st">(Non-English</span><span class="sc">\\</span><span class="st">)"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">norm_key</span>()</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>india_hours_df <span class="ot">&lt;-</span> global_ne <span class="sc">%&gt;%</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(india_not_us, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"show_title"</span>, <span class="st">"season_key"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">year</span>(week))</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- RELAX FILTERS IF NEEDED (so we always have something to plot) ----</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="co"># If empty, allow titles that also charted in US (keep Non-English)</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nrow</span>(india_hours_df) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>  india_hours_df <span class="ot">&lt;-</span> global_ne <span class="sc">%&gt;%</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">semi_join</span>(india_titles, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"show_title"</span>, <span class="st">"season_key"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">year</span>(week))</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="co"># If still empty, drop Non-English restriction and use all India charting titles' hours from GLOBAL</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nrow</span>(india_hours_df) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>  global_all <span class="ot">&lt;-</span> GLOBAL_TOP_10 <span class="sc">%&gt;%</span> <span class="fu">norm_key</span>()</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>  india_all_titles <span class="ot">&lt;-</span> COUNTRY_TOP_10 <span class="sc">%&gt;%</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(country_name <span class="sc">==</span> <span class="st">"India"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(show_title, season_title) <span class="sc">%&gt;%</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">norm_key</span>()</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>  india_hours_df <span class="ot">&lt;-</span> global_all <span class="sc">%&gt;%</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>    <span class="fu">semi_join</span>(india_all_titles, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"show_title"</span>, <span class="st">"season_key"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">year</span>(week))</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="co"># Final yearly aggregation</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>india_growth <span class="ot">&lt;-</span> india_hours_df <span class="sc">%&gt;%</span></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yearly_hours =</span> <span class="fu">sum</span>(weekly_hours_viewed, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(year)</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="co"># As a courtesy, compute the inline values in case you use them in text</span></span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>total_india_hours <span class="ot">&lt;-</span> <span class="fu">sum</span>(india_hours_df<span class="sc">$</span>weekly_hours_viewed, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>n_hindi_titles    <span class="ot">&lt;-</span> <span class="fu">n_distinct</span>(india_hours_df<span class="sc">$</span>show_title)</span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>trend_str <span class="ot">&lt;-</span> india_growth <span class="sc">%&gt;%</span></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line =</span> <span class="fu">paste0</span>(year, <span class="st">": "</span>, <span class="fu">comma</span>(yearly_hours), <span class="st">" hrs"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(line) <span class="sc">%&gt;%</span></span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="at">collapse =</span> <span class="st">"; "</span>)</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot (guard for very small data)</span></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">nrow</span>(india_growth) <span class="sc">&gt;=</span> <span class="dv">1</span>) {</span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(india_growth, <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> yearly_hours)) <span class="sc">+</span></span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> <span class="fu">label_comma</span>()) <span class="sc">+</span></span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">sort</span>(<span class="fu">unique</span>(india_growth<span class="sc">$</span>year))) <span class="sc">+</span></span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>, <span class="at">y =</span> <span class="st">"Estimated Hours Viewed"</span>,</span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a>         <span class="at">subtitle =</span> <span class="st">"Assumption: hours from GLOBAL_TOP_10 for titles that charted in India; filters relaxed if necessary"</span>) <span class="sc">+</span></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>) <span class="sc">+</span></span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">margin =</span> <span class="fu">margin</span>(<span class="at">t =</span> <span class="dv">8</span>)),</span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">margin =</span> <span class="fu">margin</span>(<span class="at">r =</span> <span class="dv">8</span>))</span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If somehow still empty, print a friendly note so your document doesn't fail</span></span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a>  grid<span class="sc">::</span><span class="fu">grid.text</span>(<span class="st">"No data available for India growth after all relaxations."</span>, <span class="at">gp =</span> grid<span class="sc">::</span><span class="fu">gpar</span>(<span class="at">cex =</span> <span class="dv">1</span>))</span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="mp01_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="task-7-netflix-press-release-open-topic" class="level2">
+<h2 class="anchored" data-anchor-id="task-7-netflix-press-release-open-topic">Task 7: Netflix Press Release (Open Topic)</h2>
+</section>
+</section>
+<section id="netflix-celebrates-global-success-of-non-english-films-as-viewership-surges-worldwide" class="level1">
+<h1>Netflix Celebrates Global Success of Non-English Films as Viewership Surges Worldwide</h1>
+<p>In recent years, Netflix’s investment in non-English-language films has paid off with unprecedented global appeal. Collectively, non-English films have been viewed for more than <strong>14,960,260,000</strong> hours, underscoring their worldwide resonance. Standout hits like <strong>Society of the Snow</strong> have helped drive this trend, spending <strong>23</strong> weeks in the global Top 10.</p>
+<p>This surge highlights not only the increasing appetite for local-language storytelling but also the power of Netflix to connect diverse cultures across borders. As Netflix continues to expand its slate of international films, the company reaffirms its commitment to providing a truly global entertainment experience — one where language is no barrier to connection.</p>
+
+
 </section>
 
 </main> <!-- /main -->

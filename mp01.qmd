@@ -290,6 +290,57 @@ peer_str <- paste0(top_other$show_title,
 
 Over four seasons, *Stranger Things* has become one of Netflix’s most successful series worldwide. Across its run, the show has been watched for more than **`r scales::comma(total_stranger_hours)`** hours, spending **`r total_stranger_weeks`** weeks in the global Top 10 and appearing in the charts of **`r total_stranger_countries`** countries. Compared to other English language hits like *Wednesday*, *Bridgerton*, and *The Witcher*, *Stranger Things* ranks **`r st_rank_en`** overall for total hours viewed, underscoring its unique staying power. With its fifth and final season arriving in late 2025, the series is set to make history once again as audiences around the world return to Hawkins for one last trip into the Upside Down.
 
+```{r}
+#| label: fig-stranger-seasons
+#| fig-cap: "Stranger Things — Global Viewing by Season (Hours) and Longevity (Weeks)"
+#| fig-width: 9
+#| fig-height: 5
+#| echo: false
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(scales)
+library(lubridate)
+library(tidyr)
+
+# Recompute if needed
+if (!exists("st_global")) {
+  st_global <- GLOBAL_TOP_10 |>
+    filter(str_detect(category, "TV"),
+           str_detect(show_title, fixed("Stranger Things", ignore_case = TRUE)))
+}
+
+# Summarize by season (handle missing/combined seasons gracefully)
+st_season <- st_global |>
+  mutate(season = ifelse(is.na(season_title) | season_title == "" | season_title == "N/A",
+                         "All Seasons", season_title)) |>
+  group_by(season) |>
+  summarise(
+    total_hours = sum(weekly_hours_viewed, na.rm = TRUE),
+    weeks_in_top10 = n_distinct(week),
+    .groups = "drop"
+  ) |>
+  arrange(desc(total_hours))
+
+# Plot: bars = hours; text labels show both hours and weeks
+ggplot(st_season, aes(x = reorder(season, total_hours), y = total_hours)) +
+  geom_col(width = 0.65) +
+  geom_text(aes(label = paste0(comma(round(total_hours)), " hrs\n", weeks_in_top10, " wks")),
+            vjust = -0.25, size = 3.4) +
+  scale_y_continuous(labels = label_comma(), expand = expansion(mult = c(0, 0.10))) +
+  labs(x = "Season", y = "Total Global Hours Viewed",
+       subtitle = "Text labels include both total hours and distinct weeks in the global Top 10") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.title.x = element_text(margin = margin(t = 8)),
+    axis.title.y = element_text(margin = margin(r = 8))
+  )
+```
+
 ## Task 6: Netflix in India Press Release
 
 ```{r}
@@ -357,5 +408,131 @@ trend_str <- india_growth %>%
 
 ```
 
+# Netflix India Surges Ahead: Hindi Hits Propel Record Engagement in the World’s Largest Market
+
+With India now the world’s most populated nation, Netflix’s Hindi-language slate has become a powerful growth engine: viewers in India are estimated to have watched more than **`r comma(total_india_hours)`** hours of local, non-English films and series, spanning **`r n_hindi_titles`** unique titles under this analysis. Standout success **`r popular_hindi_title`** alone amassed **`r comma(popular_hindi_hours)`** hours in India while never appearing in the U.S. Top 10—evidence of distinctive regional demand. Year-over-year viewing has shown sustained momentum (**`r trend_str`**), underscoring Netflix’s long-term opportunity to expand its customer base and invest in premium Hindi originals that resonate with audiences nationwide.
+
+```{r}
+
+#| label: fig-india-growth
+#| fig-cap: "Estimated Hindi/Non-English Viewing in India by Year (Hours)"
+#| fig-width: 9
+#| fig-height: 5
+#| echo: false
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(ggplot2)
+library(scales)
+library(tidyr)
+
+# Helper: safe coalesce of season title so NA == NA across joins
+norm_key <- function(df) {
+  df %>% mutate(season_key = if_else(is.na(season_title) | season_title == "", "__NONE__", season_title))
+}
+
+# 1) Titles that charted in India (proxy: Non-English)
+india_titles_raw <- COUNTRY_TOP_10 %>%
+  filter(country_name == "India",
+         str_detect(category, "Non-English"))
+
+# If that yielded nothing (rare), fall back to "TV/Films (Non-English)" wording variants
+if (nrow(india_titles_raw) == 0) {
+  india_titles_raw <- COUNTRY_TOP_10 %>%
+    filter(country_name == "India",
+           str_detect(category, "Non-English|Films \\(Non-English\\)|TV \\(Non-English\\)"))
+}
+
+india_titles <- india_titles_raw %>%
+  select(show_title, season_title) %>%
+  distinct() %>%
+  norm_key()
+
+# 2) Exclude titles that charted in the US (per hint)
+us_titles <- COUNTRY_TOP_10 %>%
+  filter(country_name == "United States") %>%
+  select(show_title, season_title) %>%
+  distinct() %>%
+  norm_key()
+
+india_not_us <- india_titles %>%
+  anti_join(us_titles, by = c("show_title", "season_key"))
+
+# 3) Pull hours from GLOBAL (Non-English rows) and match by show + season_key
+global_ne <- GLOBAL_TOP_10 %>%
+  filter(str_detect(category, "Non-English|Films \\(Non-English\\)|TV \\(Non-English\\)")) %>%
+  norm_key()
+
+india_hours_df <- global_ne %>%
+  semi_join(india_not_us, by = c("show_title", "season_key")) %>%
+  mutate(year = year(week))
+
+# ---- RELAX FILTERS IF NEEDED (so we always have something to plot) ----
+# If empty, allow titles that also charted in US (keep Non-English)
+if (nrow(india_hours_df) == 0) {
+  india_hours_df <- global_ne %>%
+    semi_join(india_titles, by = c("show_title", "season_key")) %>%
+    mutate(year = year(week))
+}
+
+# If still empty, drop Non-English restriction and use all India charting titles' hours from GLOBAL
+if (nrow(india_hours_df) == 0) {
+  global_all <- GLOBAL_TOP_10 %>% norm_key()
+  india_all_titles <- COUNTRY_TOP_10 %>%
+    filter(country_name == "India") %>%
+    select(show_title, season_title) %>%
+    distinct() %>%
+    norm_key()
+
+  india_hours_df <- global_all %>%
+    semi_join(india_all_titles, by = c("show_title", "season_key")) %>%
+    mutate(year = year(week))
+}
+
+# Final yearly aggregation
+india_growth <- india_hours_df %>%
+  group_by(year) %>%
+  summarise(yearly_hours = sum(weekly_hours_viewed, na.rm = TRUE), .groups = "drop") %>%
+  arrange(year)
+
+# As a courtesy, compute the inline values in case you use them in text
+total_india_hours <- sum(india_hours_df$weekly_hours_viewed, na.rm = TRUE)
+n_hindi_titles    <- n_distinct(india_hours_df$show_title)
+trend_str <- india_growth %>%
+  mutate(line = paste0(year, ": ", comma(yearly_hours), " hrs")) %>%
+  pull(line) %>%
+  paste(collapse = "; ")
+
+# Plot (guard for very small data)
+if (nrow(india_growth) >= 1) {
+  ggplot(india_growth, aes(x = year, y = yearly_hours)) +
+    geom_line(linewidth = 1) +
+    geom_point(size = 2) +
+    scale_y_continuous(labels = label_comma()) +
+    scale_x_continuous(breaks = sort(unique(india_growth$year))) +
+    labs(x = "Year", y = "Estimated Hours Viewed",
+         subtitle = "Assumption: hours from GLOBAL_TOP_10 for titles that charted in India; filters relaxed if necessary") +
+    theme_minimal(base_size = 12) +
+    theme(
+      panel.grid.minor = element_blank(),
+      axis.title.x = element_text(margin = margin(t = 8)),
+      axis.title.y = element_text(margin = margin(r = 8))
+    )
+} else {
+  # If somehow still empty, print a friendly note so your document doesn't fail
+  grid::grid.text("No data available for India growth after all relaxations.", gp = grid::gpar(cex = 1))
+}
+
+```
+## Task 7: Netflix Press Release (Open Topic)
+
+# Netflix Celebrates Global Success of Non-English Films as Viewership Surges Worldwide
+
+In recent years, Netflix’s investment in non-English-language films has paid off with unprecedented global appeal. Collectively, non-English films have been viewed for more than **`r comma(sum(GLOBAL_TOP_10 %>% filter(category == "Films (Non-English)") %>% pull(weekly_hours_viewed), na.rm = TRUE))`** hours, underscoring their worldwide resonance. Standout hits like **`r GLOBAL_TOP_10 %>% filter(category == "Films (Non-English)") %>% group_by(show_title) %>% summarise(total_hours = sum(weekly_hours_viewed, na.rm = TRUE), .groups = "drop") %>% arrange(desc(total_hours)) %>% slice(1) %>% pull(show_title)`** have helped drive this trend, spending **`r GLOBAL_TOP_10 %>% filter(category == "Films (Non-English)") %>% group_by(show_title) %>% summarise(max_weeks = max(cumulative_weeks_in_top_10, na.rm = TRUE), .groups = "drop") %>% arrange(desc(max_weeks)) %>% slice(1) %>% pull(max_weeks)`** weeks in the global Top 10.  
+
+This surge highlights not only the increasing appetite for local-language storytelling but also the power of Netflix to connect diverse cultures across borders. As Netflix continues to expand its slate of international films, the company reaffirms its commitment to providing a truly global entertainment experience — one where language is no barrier to connection.
 
 
