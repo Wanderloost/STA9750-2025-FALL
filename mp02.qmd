@@ -632,7 +632,7 @@ wages_top |>
 ```
 ### Question 3 + Extra Credit 2
 ```{r}
-# ---- Plot 3: Evolution of Average Household Size (storm-style) ----
+
 # Build average household size and pick a readable subset of CBSAs
 N_KEEP <- 12
 
@@ -671,7 +671,7 @@ This step was crucial for identifying which metro areas were becoming more or le
 
 ### Step 1: Combine Rent and Income
 ```{r}
-# ---- Combine INCOME + RENT (and population if desired) ----
+
 rent_income <- INCOME |>
   dplyr::select(GEOID, NAME, year, household_income) |>
   dplyr::left_join(
@@ -755,7 +755,7 @@ ggplot2::ggplot(
 ### Step 6: Interactive Vizulization 
 ```{r}
 library(DT)
-# --- Prep for Step 6: build rent_income + metrics safely (run BEFORE your DT tables) ---
+
 library(dplyr); library(stringr)
 
 # 1) Build join if not present
@@ -865,7 +865,7 @@ These measures directly inform the “YIMBY friendliness” of a city—quantify
 
 ### Step 1: Join population and permits
 ```{r}
-# --- Join POPULATION and PERMITS by CBSA + year ---
+
 housing_growth <- POPULATION |>
   dplyr::mutate(CBSA = as.character(stringr::str_sub(GEOID, -5, -1))) |>
   dplyr::select(CBSA, NAME, year, population) |>
@@ -920,7 +920,7 @@ housing_growth <- housing_growth |>
                                 NA_real_)
   )
 
-# ---- Repair/ensure Task 5 metrics exist BEFORE Step 6 ----
+
 library(dplyr); library(stringr)
 
 # 1) Join POPULATION + PERMITS (CBSA + year)
@@ -1060,7 +1060,7 @@ The visualizations created here (quadrant plots and trend lines) make it easy to
 
 ### Preliminary Metrics
 ```{r}
-# ---- Merge rent burden + housing growth ----
+
 yimby_df <- rent_income |>
   dplyr::select(CBSA = CBSA, NAME, year, rent_burden_index) |>
   dplyr::left_join(
@@ -1083,7 +1083,7 @@ yimby_summary <- yimby_df |>
     .groups = "drop"
   ) |>
   dplyr::filter(!is.na(rent_burden_change), !is.na(pop_change_pct))
-# --- SAFETY: ensure rent/housing metrics exist and merge them ---
+
 
 library(dplyr); library(stringr); library(ggplot2)
 
@@ -1169,7 +1169,7 @@ yimby_df <- rent_income %>%
 
 ```
 ```{r}
-# --- Build early/late metrics per CBSA with flexible windows ---
+
 yimby_summary <- yimby_df %>%
   group_by(CBSA, NAME) %>%
   arrange(year, .by_group = TRUE) %>%
@@ -1193,7 +1193,7 @@ yimby_summary <- yimby_df %>%
 ```
 ### Plot 1:
 ```{r}
-# thresholds (use means; fall back to medians if needed)
+
 y_thr <- if (is.finite(mean(yimby_summary$avg_housing_index, na.rm = TRUE)))
   mean(yimby_summary$avg_housing_index, na.rm = TRUE) else median(yimby_summary$avg_housing_index, na.rm = TRUE)
 
@@ -1215,7 +1215,7 @@ ggplot(yimby_summary, aes(x = rent_burden_change, y = avg_housing_index, size = 
 
 ### Plot 2:
 ```{r}
-# strict candidate set
+
 cands <- yimby_summary %>%
   filter(rent_burden_change < 0, avg_housing_index >= y_thr, pop_change_pct > 0)
 
@@ -1290,7 +1290,7 @@ Cross-partisan appeal: High-growth metros earn recognition; high-cost metros rec
 Key Takeaway: A Federal YIMBY Incentive rewards metros like Houston that show supply-driven affordability and helps metros like New York expand housing so young workers and families can afford to live, work, and thrive.
 
 ```{r}
-# ---- Millennial Attraction Index (MAI): age 25–34 share relative to national avg ----
+
 library(dplyr); library(stringr); library(tidyr)
 
 # 25–34 = (male 25–29, male 30–34, female 25–29, female 30–34)
@@ -1325,7 +1325,7 @@ MAI <- MAI |>
   ungroup()
 ```
 ```{r}
-# ---- Ensure rent burden + housing growth metrics exist (repair-safe) ----
+
 library(scales)
 
 # Rent burden join
@@ -1337,7 +1337,7 @@ if (!exists("rent_income")) {
     mutate(CBSA = str_sub(GEOID, -5, -1))
 }
 
-# Raw + standardized rent burden (50 = national avg in 2009)
+
 if (!("rent_burden_raw" %in% names(rent_income))) {
   rent_income <- rent_income %>%
     mutate(rent_burden_raw = if_else(
@@ -1376,9 +1376,9 @@ if (!("pop_growth_5yr" %in% names(housing_growth))) {
 if (!all(c("instantaneous_growth","rate_based_growth") %in% names(housing_growth))) {
   housing_growth <- housing_growth %>%
     mutate(
-      instantaneous_growth = (new_housing_units_permitted / population) * 1000,        # per 1,000 residents
+      instantaneous_growth = (new_housing_units_permitted / population) * 1000,        
       rate_based_growth    = if_else(pop_growth_5yr > 0,
-                                     new_housing_units_permitted / (pop_growth_5yr*100), # per 1% pop growth
+                                     new_housing_units_permitted / (pop_growth_5yr*100),
                                      NA_real_)
     )
 }
@@ -1425,11 +1425,11 @@ yimby_summary <- yimby_df %>%
   ) %>%
   filter(is.finite(rent_burden_change), is.finite(pop_change_pct), is.finite(avg_housing_index), is.finite(avg_MAI))
 
-# thresholds
+
 y_thr <- if (is.finite(mean(yimby_summary$avg_housing_index, na.rm = TRUE)))
   mean(yimby_summary$avg_housing_index, na.rm = TRUE) else median(yimby_summary$avg_housing_index, na.rm = TRUE)
 
-# ---- Plot 1: YIMBY quadrant with Millennial Appeal (color = avg_MAI) ----
+
 ggplot2::ggplot(
   yimby_summary,
   ggplot2::aes(x = rent_burden_change, y = avg_housing_index, size = pmax(pop_change_pct, 0), color = avg_MAI)
