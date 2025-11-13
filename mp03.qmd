@@ -12,7 +12,6 @@ execute:
   echo: true
   warning: false
   message: false
-output-dir: docs
 ---
 
 ## Introduction
@@ -23,7 +22,8 @@ districts, and propose a data-driven program to support sustainable canopy growt
 
 ---
 
-#️# Task 1: NYC City Council Boundaries
+
+## Task 1: NYC City Council Boundaries
 
 ```{r}
 library(sf)
@@ -723,13 +723,13 @@ ggplot() +
   theme_minimal()
 ```
 
-## Extra Credit 1:
+### Extra Credit #1: Interactive Tree Map
+
+The citywide tree map is extremely dense as a static graphic. To make this pattern more interpretable, 
+I created an interactive leaflet map that allows the viewer to pan, zoom, and toggle clusters of trees. 
+Trees are colored by condition (`tpcondition`) and can be explored at the block or even individual-tree level.
 
 ```{r}
-#| label: ec1_prep_leaflet_data
-#| message: false
-#| warning: false
-
 library(sf)
 library(dplyr)
 
@@ -795,4 +795,4 @@ leaflet() |>
     lng2 = st_bbox(dist_poly_ll)[["xmax"]],
     lat2 = st_bbox(dist_poly_ll)[["ymax"]]
   )
-``` 
+```
