@@ -1,0 +1,210 @@
+---
+title: "How Do Obesity Rates Change with Age Across U.S. States?"
+author: "Your Names"
+format:
+  html:
+    theme: cosmo
+    code-fold: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(tidyverse)
+library(janitor)
+library(scales)
+# library(broom) # uncomment if you prefer broom-based modeling
+```
+
+Data and Question
+
+Our specific subquestion in this section is:
+
+Are there states where obesity rates change (rise or fall) more sharply with age with respect to other states?
+
+We operationalize this by:
+
+Computing obesity prevalence by state × age group
+
+Converting age groups to a numeric age midpoint
+
+Fitting a simple linear model of obesity prevalence vs. age midpoint within each state
+
+Comparing the slope across states (steeper slope = sharper change with age)
+
+```{r}
+library(readr)
+library(dplyr)
+
+obesity_raw <- read_csv(
+  "https://data.cdc.gov/resource/hn4x-zwk7.csv?$limit=50000"
+)
+
+names(obesity_raw)
+
+```
+
+```{r}
+dplyr::glimpse(obesity_raw)
+```
+
+```{r}
+library(tidyverse)
+
+obesity_age <- obesity_raw %>%
+filter(
+class == "Obesity / Weight Status",
+question == "Percent of adults aged 18 years and older who have obesity",
+stratificationcategory1 == "Age (years)",
+!is.na(age_years),
+!is.na(data_value),
+locationabbr != "US"   # drop national aggregate
+) %>%
+select(
+state_abbr = locationabbr,
+state_name = locationdesc,
+year = yearstart,
+age_group = age_years,
+obesity_pct = data_value
+)
+
+glimpse(obesity_age)
+```
+
+```{r}
+obesity_age <- obesity_age %>%
+  mutate(
+    age_low  = readr::parse_number(age_group),
+    age_high = readr::parse_number(str_extract(age_group, "\\d+\\s*$")),
+    age_mid  = case_when(
+      !is.na(age_high) ~ (age_low + age_high) / 2,
+      TRUE             ~ age_low + 5
+    )
+  )
+```
+
+```{r}
+obesity_age %>%
+  distinct(age_group, age_mid) %>%
+  arrange(age_mid)
+```
+
+```{r}
+sort(unique(obesity_age$year))
+```
+
+```{r}
+target_year <- max(obesity_age$year)
+
+obesity_year <- obesity_age %>%
+  filter(year == target_year)
+```
+
+```{r}
+library(broom)
+
+state_slopes <- obesity_year %>%
+  group_by(state_abbr, state_name) %>%
+  filter(n() >= 3) %>%  # make sure a state has enough age groups
+  do(tidy(lm(obesity_pct ~ age_mid, data = .))) %>%
+  filter(term == "age_mid") %>%
+  ungroup() %>%
+  mutate(
+    slope_per_decade = estimate * 10
+  ) %>%
+  arrange(desc(slope_per_decade))
+
+head(state_slopes)
+```
+
+```{r}
+top10_states <- state_slopes %>% slice_max(slope_per_decade, n = 10)
+bottom10_states <- state_slopes %>% slice_min(slope_per_decade, n = 10)
+
+top10_states
+bottom10_states
+```
+
+```{r}
+interesting_states <- c(
+  top10_states$state_abbr[1],
+  top10_states$state_abbr[2],
+  bottom10_states$state_abbr[1],
+  bottom10_states$state_abbr[2]
+)
+
+obesity_year %>%
+  filter(state_abbr %in% interesting_states) %>%
+  ggplot(aes(x = age_mid, y = obesity_pct, color = state_abbr)) +
+  geom_line(linewidth = 1) +
+  geom_point() +
+  facet_wrap(~ state_abbr) +
+  labs(
+    title = paste("Obesity Prevalence by Age Group,"),
+    subtitle = "Selected states with steep vs flat age–obesity relationships",
+    x = "Age (midpoint of age group)",
+    y = "Obesity prevalence (%)",
+    color = "State"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+library(tidycensus)
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(scales)
+
+library(tigris)
+
+options(tigris_use_cache = TRUE)
+
+states_sf <- states(cb = TRUE, year = 2022) %>%
+  filter(!STUSPS %in% c("AK", "HI", "PR")) %>%
+  transmute(
+    state_abbr = STUSPS,
+    state_name = NAME,
+    geometry
+  )
+
+map_data <- states_sf %>%
+  left_join(
+    state_slopes,
+    by = "state_abbr"
+  )
+
+summary(map_data$slope_per_decade)
+
+```
+
+```{r}
+ggplot(map_data) +
+geom_sf(aes(fill = slope_per_decade), color = "white", linewidth = 0.2) +
+coord_sf(
+xlim = c(-125, -66),
+ylim = c(24, 50),
+expand = FALSE
+) +
+scale_fill_viridis_c(
+name = "Change in obesity\nper decade of age\n(percentage points)",
+option = "plasma",
+direction = -1,
+labels = scales::label_number(accuracy = 0.1)
+) +
+labs(
+title = paste("How Sharply Does Obesity Increase with Age by State"),
+subtitle = "Steeper colors indicate faster age-related increases in obesity prevalence",
+caption = "Source: CDC BRFSS & U.S. Census TIGER/Line"
+) +
+theme_minimal() +
+theme(
+axis.text = element_blank(),
+axis.ticks = element_blank(),
+panel.grid = element_blank(),
+plot.margin = margin(5, 5, 5, 5),
+aspect.ratio = 0.6
+)
+```

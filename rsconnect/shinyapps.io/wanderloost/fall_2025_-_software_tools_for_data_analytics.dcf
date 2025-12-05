@@ -1,0 +1,14 @@
+name: fall_2025_-_software_tools_for_data_analytics
+title:
+username: wanderloost
+account: wanderloost
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16323935
+bundleId:
+url: https://wanderloost.shinyapps.io/fall_2025_-_software_tools_for_data_analytics/
+version: 1
+quarto_version: 1.7.33
+quarto_engines: knitr
+asMultiple: FALSE
+asStatic: FALSE
