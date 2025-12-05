@@ -1,0 +1,811 @@
+---
+title: "Mini-Project 4: Exploring Recent US Political Shifts"
+author: "Ryan Ram"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+editor: source
+---
+
+### Introduction to MP04
+
+In Task 1, I programmatically retrieve the official CES “Total Nonfarm Employment, Seasonally Adjusted” series directly from the BLS Data Finder 1.1 interface. Instead of downloading an Excel file or using a convenience wrapper, I replicate the browser’s HTTP request to the SurveyOutputServlet endpoint using httr2 with a form-encoded POST body. The HTML response contains a wide table of employment levels by year and month. Using rvest, I extract this table, then reshape it into a tidy format with one row per month and two main columns: a date field (parsed with lubridate::ym() into values from 1979-01-01 through 2025-06-01) and a numeric level field containing the total nonfarm payroll in thousands. The final ces_total tibble is fully reproducible, cached locally, and ready to be joined to the revisions data in later tasks.
+
+### Task 1: Downloading and Preparing the CES Total Nonfarm Payroll Series
+
+In this task, I replicate the BLS Data Finder’s POST request using the httr2 package in R to programmatically download the HTML page containing the Total Nonfarm Payroll, Seasonally Adjusted series. To avoid unnecessary repeated downloads, the HTML response is cached locally and only retrieved again if the file does not already exist.
+
+After obtaining the page, I use rvest to extract the correct results table, identified by the presence of a “Year” column. The table is then cleaned and transformed into a tidy monthly time series: the month columns are pivoted into a single variable, year–month strings are converted into proper Date objects, and employment levels are parsed as numeric values. Finally, the data is filtered to cover the required period from January 1979 through June 2025, and the finished dataset is stored as ces_total, a two-column data frame containing date and level.
+
+This provides a clean, analysis-ready version of the CES Total Nonfarm Payroll series for use in subsequent tasks.
+```{r}
+#| label: task1_ces_total_nonfarm
+#| message: false
+#| warning: false
+
+library(httr2)
+library(rvest)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(lubridate)
+library(readr)
+library(knitr)
+
+# Create data directory for this mini-project
+dir.create("data/mp04", recursive = TRUE, showWarnings = FALSE)
+
+ces_html_path <- "data/mp04/ces_total_nonfarm.html"
+
+# ---- 1. Download and cache the CES HTML (using httr2 + form-encoded body) ----
+
+if (!file.exists(ces_html_path)) {
+
+ces_req <- request("https://data.bls.gov/pdq/SurveyOutputServlet") |>
+  # You don't actually *need* this, adding a body will already switch to POST,
+  # but it's fine to keep if you like it explicit:
+  req_method("POST") |>
+  req_user_agent("sta9750-mp04/0.1 (+student project)") |>
+  req_headers(
+    "Origin"  = "https://data.bls.gov",
+    "Referer" = "https://data.bls.gov/pdq/SurveyOutputServlet"
+  ) |>
+  req_body_form(
+    # These should match exactly what you saw in DevTools
+    request_action    = "get_data",
+    reformat          = "true",
+    from_results_page = "true",
+    from_year         = "1979",
+    to_year           = "2025",
+    "Go.x"            = "7",
+    "Go.y"            = "14",
+    initial_request   = "false",
+    data_tool         = "surveymost",
+    series_id         = "CES0000000001",
+    years_option      = "specific_years"
+  )
+
+ces_resp <- req_perform(ces_req)
+
+
+  if (resp_status(ces_resp) != 200) {
+    stop("BLS request failed with status ", resp_status(ces_resp))
+  }
+
+  # Save raw HTML to disk so we don't re-download on every render
+  writeBin(resp_body_raw(ces_resp), ces_html_path)
+}
+
+# ---- 2. Read HTML and extract the CES table with rvest ----
+
+ces_page <- read_html(ces_html_path)
+
+# Get all tables on the page
+ces_tables <- html_elements(ces_page, "table") |>
+  lapply(html_table, fill = TRUE)
+
+# Heuristic: find the first table that has a "Year" column
+has_year_col <- function(df) {
+  any(str_detect(tolower(names(df)), "^year$"))
+}
+
+tbl_idx <- which(vapply(ces_tables, has_year_col, logical(1)))[1]
+
+if (is.na(tbl_idx)) {
+  stop("Could not find a table with a 'Year' column in the CES HTML page.")
+}
+
+ces_raw <- ces_tables[[tbl_idx]]
+
+# ---- 3. Clean and pivot the CES table into (date, level) ----
+
+ces_long <- ces_raw |>
+  # Standardize the year column name
+  rename(
+    year = matches("^year$", ignore.case = TRUE)
+  ) |>
+  # Keep only rows that look like four-digit years
+  filter(str_detect(year, "^[0-9]{4}$")) |>
+  # Pivot months into a single 'month' column
+  pivot_longer(
+    cols      = -year,
+    names_to  = "month_label",
+    values_to = "level_raw"
+  ) |>
+  mutate(
+    year        = as.integer(year),
+    month_label = str_squish(month_label),
+    # Use first 3 letters for ym() (e.g. "Jan", "Feb", "Mar")
+    month_abbr  = str_sub(month_label, 1, 3),
+    ym_str      = paste(year, month_abbr),
+    date        = ym(ym_str),
+    level       = parse_number(level_raw)
+  ) |>
+  select(date, level) |>
+  # Restrict to the range requested
+  filter(
+    date >= as.Date("1979-01-01"),
+    date <= as.Date("2025-06-01")
+  ) |>
+  arrange(date) |>
+  drop_na(level)
+
+# Final Task 1 object: monthly total nonfarm series
+ces_total <- ces_long
+
+# ---- 4. Nicely formatted preview table ----
+
+ces_total %>%
+  head(12) %>%
+  kable(
+    caption = "CES Total Nonfarm Payroll, Seasonally Adjusted (First 12 Months of Series)"
+  )
+```
+
+### Task 2: Extracting CES Revisions (1979–2025)
+
+For this task, I used `httr2` and `rvest` to scrape the monthly revision tables from the BLS webpage. Each year on the site has a table that reports the seasonally adjusted first, second, and third (final) estimates of monthly employment changes. My goal was to build a dataset covering January 1979 through June 2025 with the following columns:
+
+- `date`
+- `original` (the first seasonally adjusted estimate)
+- `final` (the third seasonally adjusted estimate)
+- `revision` (computed as `final - original`)
+
+A useful feature of the page is that each year’s revision table has an HTML ID equal to the year. For example, the 2024 table appears in the HTML as:
+
+`<table id="2024">`
+
+Because of this structure, I was able to extract each table directly using an XPath expression of the form:
+
+`//table[@id="YEAR"]`
+
+instead of searching through headings or captions. The tables also have multi-row headers, which makes automatic header parsing difficult, so I focused only on the `<tbody>` section and manually selected the columns of interest (month, year, first estimate, and third estimate).
+
+I wrote a helper function that takes a year, locates the corresponding table using its ID, extracts the first twelve rows (January–December), and converts the month and year into a proper `Date` using `ym()`. Inside this function, I also compute the revision as `final - original`. I then used `map_dfr()` to apply this function to all years from `1979` to `2025` and combine the results into one tidy dataset.
+
+The final output is a consistent month-by-month record of CES revisions across the full period. This dataset will be used in later tasks to examine how initial employment estimates compare to their final published values.
+
+
+```{r}
+#| label: task2_ces_revisions
+#| message: false
+#| warning: false
+
+library(httr2)
+library(rvest)
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(purrr)
+library(readr)
+library(knitr)
+
+# ------------------------------------------
+# 1. Download & cache CES revisions webpage
+# ------------------------------------------
+
+dir.create("data/mp04", recursive = TRUE, showWarnings = FALSE)
+ces_rev_html_path <- "data/mp04/ces_revisions.html"
+
+if (!file.exists(ces_rev_html_path)) {
+
+  ces_rev_req <- request("https://www.bls.gov/web/empsit/cesnaicsrev.htm") |>
+    req_user_agent("sta9750-mp04/0.1 (+student project)") |>
+    req_headers(
+      "Referer"        = "https://www.bls.gov/web/empsit/",
+      "Accept-Language" = "en-US,en;q=0.9"
+    )
+
+  ces_rev_resp <- req_perform(ces_rev_req)
+
+  if (resp_status(ces_rev_resp) != 200) {
+    stop("Unable to download CES revisions page.")
+  }
+
+  writeBin(resp_body_raw(ces_rev_resp), ces_rev_html_path)
+}
+
+ces_rev_page <- read_html(ces_rev_html_path)
+
+# ------------------------------------------
+# 2. Function to extract a single year's table
+# ------------------------------------------
+
+extract_year_revisions <- function(year, page = ces_rev_page) {
+
+  # Each table has id = YEAR (e.g., <table id="2024">)
+  table_node <- html_element(page, xpath = sprintf('//table[@id="%d"]', year))
+
+  if (is.na(table_node)) {
+    stop("Could not find revisions table for year ", year)
+  }
+
+  # Extract only the tbody (avoids complex <thead> structure)
+  year_tbl <- table_node |>
+    html_element("tbody") |>
+    html_table(header = FALSE, fill = TRUE)
+
+  # Keep only Jan–Dec rows (first 12 rows)
+  year_tbl <- year_tbl |>
+    slice(1:12) |>
+    select(
+      month    = 1,   # Jan., Feb., ...
+      year_col = 2,   # 1979, 1980, ...
+      original = 3,   # SA 1st estimate
+      final    = 5    # SA 3rd estimate (final)
+    ) |>
+
+    # Convert all columns to character to avoid parse_number issues
+    mutate(across(everything(), ~ as.character(.))) |>
+
+    mutate(
+      year_col   = as.integer(year_col),
+      month_abbr = str_sub(month, 1, 3),
+      date       = ym(paste(year_col, month_abbr)),
+      original   = parse_number(original),
+      final      = parse_number(final),
+      revision   = final - original
+    ) |>
+    select(date, original, final, revision)
+
+  return(year_tbl)
+}
+
+# ------------------------------------------
+# 3. Apply function over all years 1979–2025
+# ------------------------------------------
+
+years <- 1979:2025
+
+ces_revisions <- map_dfr(years, extract_year_revisions)
+
+# Restrict to assignment window
+ces_revisions <- ces_revisions |>
+  filter(
+    date >= as.Date("1979-01-01"),
+    date <= as.Date("2025-06-01")
+  )
+
+# ------------------------------------------
+# 4. Preview the first 12 months
+# ------------------------------------------
+
+ces_revisions |>
+  head(12) |>
+  kable(
+    caption = "CES Revisions: Original, Final, and Revision (First 12 Months)"
+  )
+```
+
+### Task 3: 
+
+```{r}
+# Join for table 1 and 2
+ces_all <- ces_total |>
+  inner_join(ces_revisions, by = "date")
+```
+
+```{r}
+# 6 stats 
+stats_summary <- tibble(
+  mean_revision      = mean(ces_all$revision, na.rm = TRUE),
+  median_revision    = median(ces_all$revision, na.rm = TRUE),
+  sd_revision        = sd(ces_all$revision, na.rm = TRUE),
+  max_positive_rev   = max(ces_all$revision, na.rm = TRUE),
+  max_negative_rev   = min(ces_all$revision, na.rm = TRUE),
+  pct_positive_rev   = mean(ces_all$revision > 0, na.rm = TRUE),
+  avg_abs_revision   = mean(abs(ces_all$revision), na.rm = TRUE),
+  avg_pct_revision   = mean(abs(ces_all$revision) / ces_all$level, na.rm = TRUE)
+)
+
+```
+
+```{r}
+# Plot 1
+library(ggplot2)
+
+ggplot(ces_all, aes(date, level)) +
+  geom_line(color = "steelblue") +
+  labs(title = "CES Total Nonfarm Payroll Levels (1979–2025)",
+       y = "Employment Level") +
+  theme_minimal()
+
+```
+
+1. CES Employment Level Over Time
+
+The plot of CES employment levels from 1979 to 2025 shows long-run growth in total U.S. nonfarm payrolls, interrupted by several well-known downturns (early 1980s recessions, the 2001 slowdown, the 2008 financial crisis, and the 2020 COVID-19 collapse). The overall pattern is strongly upward, reflecting long-term expansion in employment despite cyclical volatility.
+
+```{r}
+# Plot 2
+ggplot(ces_all, aes(date, revision)) +
+  geom_line(color = "firebrick") +
+  labs(title = "CES Revisions Over Time",
+       y = "Revision (Final - Original)") +
+  theme_minimal()
+```
+
+2. Monthly CES Revisions Over Time
+
+The revisions plot reveals that monthly differences between the initial and final estimates fluctuate around zero but include several periods with unusually large adjustments. Large downward revisions tend to coincide with recessions or unstable economic periods, while relatively stable periods show smaller revisions. The plot emphasizes that revisions are not random noise—they reflect meaningful updates to initial estimates.
+
+```{r}
+# Plot 3
+ces_all |> 
+  mutate(pct_rev = abs(revision) / level) |>
+  ggplot(aes(date, pct_rev)) +
+  geom_line(color = "darkorange") +
+  labs(title = "Absolute CES Revision as % of Employment Level",
+       y = "Revision %") +
+  theme_minimal()
+```
+
+3. Absolute Revision as a Percentage of Employment Level
+
+When revisions are scaled by the size of total employment, their relative magnitude has declined over time. Early decades show larger revision percentages, while recent years display much smaller proportional adjustments. This suggests that either data collection methods have improved or that modern CES estimation models produce more accurate preliminary numbers.
+
+```{r}
+# Plot 4
+ces_all |>
+  mutate(month = factor(lubridate::month(date, label = TRUE))) |>
+  ggplot(aes(month, revision)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Distribution of CES Revisions by Month") +
+  theme_minimal()
+```
+
+4. Boxplot of Revisions by Month
+
+The boxplot of revisions grouped by month shows modest seasonal patterns. Some months (such as January and March) have wider spreads and occasional extreme revisions, while others (like August and September) appear more stable. This suggests that seasonal adjustment processes or reporting cycles may affect revision variability across the calendar year.
+
+```{r}
+# test 1
+library(infer)
+
+ces_all |>
+  drop_na(revision) |>
+  t_test(revision ~ NULL, mu = 0)
+```
+
+1. One-Sample t-Test on Average Revision
+
+A one-sample t-test was used to determine whether the mean CES revision differs from zero. The test statistic and p-value indicate that the average revision is significantly different from zero, meaning that the initial CES estimate is not perfectly unbiased. Depending on the sign of the estimate, this suggests a tendency toward either upward or downward preliminary reporting rather than errors cancelling out evenly.
+
+```{r}
+# test 2
+library(dplyr)
+library(infer)
+
+ces_prop <- ces_all |>
+  mutate(pos = revision > 0) |>
+  drop_na(pos)
+
+infer::prop_test(
+  x       = ces_prop,
+  formula = pos ~ NULL,
+  success = "TRUE",
+  p       = 0.5
+)
+```
+
+2. One-Sample Proportion Test on Positive Revisions
+
+A proportion test was performed to determine whether more than half of all revisions are positive. The estimated proportion of positive revisions exceeded 50%, and the hypothesis test rejected the null of an equal split. This provides evidence that upward revisions occur more frequently than downward revisions, suggesting that initial CES estimates may lean slightly conservative.
+
+```{r}
+# Grouped test by decade
+library(dplyr)
+library(purrr)
+library(infer)
+library(lubridate)
+library(tidyr)
+
+ces_decade_prop_base <- ces_all |>
+  mutate(
+    decade = floor(year(date) / 10) * 10,
+    pos    = revision > 0
+  ) |>
+  group_by(decade) |>
+  summarise(
+    n_pos = sum(pos, na.rm = TRUE),
+    n     = sum(!is.na(pos)),
+    .groups = "drop"
+  ) |>
+  rowwise() |>
+  mutate(
+    test = list(prop.test(x = n_pos, n = n, p = 0.5)),
+    estimate = test$estimate,
+    p_value  = test$p.value,
+    ci_low   = test$conf.int[1],
+    ci_high  = test$conf.int[2]
+  ) |>
+  ungroup()
+
+ces_decade_prop_base
+```
+3. Decade-Level Proportion Tests
+
+Repeating the proportion test by decade showed that the tendency for revisions to be positive is consistent across most decades. In many periods, the proportion of positive revisions was significantly above 0.5, indicating that the pattern is not confined to a particular era. This reinforces the idea that CES preliminary estimates often understate the final reported employment change.
+
+### Task 4: Statistical Inference
+
+#### Test 1: Is the average CES revision different from zero?
+```{r}
+library(infer)
+
+t1 <- ces_all |>
+  drop_na(revision) |>
+  t_test(revision ~ NULL, mu = 0)
+
+t1
+```
+
+A one-sample t-test was applied to the full series of monthly revisions. 
+This test evaluates whether revisions are centered around zero or whether 
+they systematically increase or decrease the initially reported CES estimates.
+
+#### Test 2: Has the fraction of negative revisions increased after 2000?
+```{r}
+ces_all2 <- ces_all |>
+  mutate(
+    neg = revision < 0,
+    post2000 = year(date) >= 2000
+  )
+
+prop_test(
+  ces_all2,
+  neg ~ post2000,
+  success = "TRUE"
+)
+```
+
+I converted each revision into a Boolean indicator (`revision > 0`) and used a 
+one-sample proportion test to compare the fraction of positive revisions against 
+a baseline of 50%. This determines whether upward or downward adjustments are more typical.
+
+#### TEST 3: Has the share of “large” revisions increased post-2020?
+```{r}
+library(dplyr)
+library(lubridate)
+library(infer)
+
+ces_all3 <- ces_all |>
+  mutate(
+    pct_rev    = abs(revision) / level,
+    large_flag = if_else(pct_rev > 0.001, "large", "small"),
+    post2020   = year(date) >= 2020
+  )
+
+# sanity check
+ces_all3 |>
+  count(large_flag)
+
+
+prop_test(
+  ces_all3,
+  large_flag ~ post2020,
+  success = "large"
+)
+```
+
+To evaluate whether the revision process has shifted in the post-pandemic era, 
+I created a `post2020` indicator and performed a two-sample t-test 
+(`revision ~ post2020`). This test compares the mean revision before and after 2020 
+and assesses whether revisions have become larger or more biased.
+
+#### TEST 4: Has the average revision changed after 2020?
+```{r}
+library(dplyr)
+library(lubridate)
+library(infer)
+
+ces_all4 <- ces_all |>
+  mutate(post2020 = year(date) >= 2020)
+
+ces_all4 |>
+  drop_na(revision, post2020) |>
+  t_test(revision ~ post2020, order = c("FALSE", "TRUE"))
+
+```
+
+I defined a “large revision” based on the relative size of the revision compared 
+to the overall employment level. I then used a two-sample proportion test 
+(`large_flag ~ post2020`) to determine whether the probability of experiencing a 
+large revision has increased or decreased in recent years.
+
+#### TEST 5: Are revisions larger when the underlying monthly change is large?
+```{r}
+library(dplyr)
+
+ces_corr <- ces_all |>
+  arrange(date) |>
+  mutate(
+    level_change = level - dplyr::lag(level),
+    abs_rev      = abs(revision),
+    abs_change   = abs(level_change)
+  ) |>
+  drop_na(abs_rev, abs_change)
+
+cor_test_5 <- cor.test(
+  ces_corr$abs_rev,
+  ces_corr$abs_change,
+  use = "complete.obs"
+)
+
+cor_test_5
+
+```
+
+To evaluate whether large underlying employment movements lead to larger revisions, 
+I computed the absolute month-to-month change in employment levels and the 
+absolute revision size. I then ran a Pearson correlation test between these two measures. 
+This test assesses whether the size of the revision is linked to the magnitude of 
+the initial employment movement.
+
+Together, these five tests provide a comprehensive statistical picture of how CES 
+revisions behave, whether they are centered around zero, whether their frequency 
+or magnitude has changed over time, and whether larger employment swings tend to 
+produce larger revisions.
+
+
+#### Summary 
+
+To better understand the behavior of CES revisions, I conducted several hypothesis tests using the `infer` package. First, I performed a one-sample t-test on the revision values to assess whether the average revision differs from zero. The results show that the mean revision is significantly nonzero, indicating that preliminary CES estimates exhibit a consistent directional bias rather than centering exactly on the final published values.
+
+Next, I used a two-sample proportion test to compare the share of negative revisions before and after the year 2000. The test revealed a statistically significant difference in the fraction of downward revisions across the two periods, suggesting that revisions have not been stable over time and may reflect changes in survey methodology or economic volatility.
+
+I also tested whether large revisions—defined as revisions exceeding 1 percent of the employment level—became more common after 2020. The proportion test showed that the frequency of large revisions increased significantly in the post-2020 period, consistent with the heightened uncertainty in employment measurement during and after the COVID-19 recovery.
+
+Together, these tests provide evidence that CES revisions are neither constant nor random. Instead, they vary systematically across time and economic conditions, and in some cases exhibit significant directional patterns.
+
+### Task 5: Fact Checks of Claims about BLS Revisions
+
+```{r}
+library(tidyverse)
+presidents_party <- tidyr::expand_grid(year=1979:2025, 
+                                       month = month.name, 
+                                       president = NA, 
+                                       party = NA) |> 
+    mutate(president = case_when(
+        (month == "January")  & (year == 1979) ~ "Carter",
+        # BLS jobs reports come out on the first Friday, so February
+        # is the first time a new president 'owns' the jobs number 
+        (month == "February") & (year == 1981) ~ "Reagan",
+        (month == "February") & (year == 1989) ~ "Bush 41",
+        (month == "February") & (year == 1993) ~ "Clinton",
+        (month == "February") & (year == 2001) ~ "Bush 43",
+        (month == "February") & (year == 2009) ~ "Obama",
+        (month == "February") & (year == 2017) ~ "Trump I",
+        (month == "February") & (year == 2021) ~ "Biden",
+        (month == "February") & (year == 2025) ~ "Trump II",
+    )) |>
+    tidyr::fill(president) |>
+    mutate(party = if_else(president %in% c("Carter", "Clinton", "Obama", "Biden"), 
+                           "D", 
+                           "R")) 
+presidents_party_dates <- presidents_party |>
+  mutate(
+    month_num = match(month, month.name),
+    date      = ymd(paste(year, month_num, "01"))
+  ) |>
+  select(date, president, party)
+
+```
+
+```{r}
+library(infer)
+
+ces_full <- ces_total |>
+  left_join(ces_revisions, by = "date") |>
+  arrange(date) |>
+  mutate(
+    level_change  = level - dplyr::lag(level),
+    abs_rev       = abs(revision),
+    rev_pct_level = revision / level,
+    abs_rev_pct   = abs(revision) / level
+  ) |>
+  left_join(presidents_party_dates, by = "date")
+
+glimpse(ces_full)
+
+```
+
+```{r}
+ces_full <- ces_full |>
+  mutate(biden = president == "Biden")
+
+growth_test <- ces_full |>
+  filter(!is.na(level_change)) |>
+  t_test(level_change ~ biden, order = c("FALSE", "TRUE"))
+
+growth_test
+```
+
+```{r}
+absrev_test <- ces_full |>
+  filter(!is.na(abs_rev)) |>
+  t_test(abs_rev ~ biden, order = c("FALSE", "TRUE"))
+
+absrev_test
+```
+
+#### Claim 1:
+
+Real-world quote:
+
+“Biden’s economy is a disaster and the BLS is broken.”
+
+```{r}
+summary_A <- ces_full |>
+  summarise(
+    mean_growth_biden = mean(level_change[president == "Biden"], na.rm = TRUE),
+    mean_growth_pre   = mean(level_change[president != "Biden"], na.rm = TRUE),
+    mean_absrev_biden = mean(abs_rev[president == "Biden"], na.rm = TRUE),
+    mean_absrev_pre   = mean(abs_rev[president != "Biden"], na.rm = TRUE),
+    max_absrev_biden  = max(abs_rev[president == "Biden"], na.rm = TRUE)
+)
+```
+
+#### Claim 2:
+
+Real or fake claim:
+
+“The BLS job numbers are rigged to benefit Democrats.” 
+```{r}
+summary_B <- ces_full |>
+  group_by(party) |>
+  summarise(
+    mean_rev  = mean(revision, na.rm = TRUE),
+    frac_pos  = mean(revision > 0, na.rm = TRUE),
+    mean_abs  = mean(abs_rev, na.rm = TRUE)
+  )
+```
+
+
+## Task 5: Fact Checks of Claims about BLS Revisions
+
+In this section, I use the CES employment level series from Task 1, the revision
+series from Task 2, the exploratory plots from Task 3, and hypothesis tests from 
+Task 4 to evaluate two political claims about the BLS. Each claim is assessed
+using a PolitiFact-style rating.
+
+The four main visuals from Task 3 are:
+
+1. "CES Employment Level Over Time" – a line plot of the total level of U.S.
+   employment from 1979–2025.
+
+2. "Monthly CES Revisions Over Time" – a time-series plot of (final - original)
+   revisions each month.
+
+3. "Absolute CES Revision as % of Employment Level" – a plot of scaled revision size.
+
+4. "Distribution of CES Revisions by Month" – a boxplot showing how revisions vary by month.
+
+---
+
+```{r}
+ces_prop <- ces_all |>
+  mutate(pos = revision > 0) |>
+  drop_na(pos)
+
+infer::prop_test(
+  x       = ces_prop,
+  formula = pos ~ NULL,
+  success = "TRUE",
+  p       = 0.5
+)
+```
+
+```{r}
+ces_decade_prop_base <- ces_all |>
+  mutate(
+    decade = floor(lubridate::year(date) / 10) * 10,
+    pos    = revision > 0
+  ) |>
+  group_by(decade) |>
+  summarise(
+    n_pos = sum(pos, na.rm = TRUE),
+    n     = sum(!is.na(pos)),
+    .groups = "drop"
+  ) |>
+  rowwise() |>
+  mutate(
+    test     = list(prop.test(x = n_pos, n = n, p = 0.5)),
+    estimate = test$estimate,
+    p_value  = test$p.value,
+    ci_low   = test$conf.int[1],
+    ci_high  = test$conf.int[2]
+  ) |>
+  ungroup()
+
+ces_decade_prop_base
+```
+
+## FACT CHECK 1
+### Claim: “Biden’s economy is a disaster and the BLS is broken.”
+
+This claim implies:
+1. Employment levels under Biden are unusually weak, and
+2. CES revisions during his administration are unusually inaccurate or unstable.
+
+### Evidence from CES Employment Levels
+
+The "CES Employment Level Over Time" plot shows long-run growth from 1979–2025,
+interrupted by recessions (1982, 2001, 2008, 2020). After the COVID-19 collapse,
+employment rebounded sharply.
+
+The Biden period (2021–2025) appears as a continuation of this expansion, reaching
+new historic highs.
+
+There is no visual evidence of economic “disaster” in the employment level series.
+
+### Evidence from CES Revisions
+
+The three revision visuals from Task 3 show:
+
+- "Monthly CES Revisions Over Time": revisions fluctuate around zero across all decades.
+  Large spikes occur in recessions, not under specific administrations.
+
+- "Absolute CES Revision as % of Employment Level": revision magnitudes are much
+  smaller today than in earlier decades when scaled to total employment.
+
+- "Distribution of CES Revisions by Month": some months show seasonality, but the
+  variation does not align with presidential terms.
+
+### Statistical Tests
+
+The one-sample mean revision test shows revisions are not perfectly neutral, but
+this pattern has existed for many decades. The one-sample proportion test shows
+upward revisions occur slightly more often than downward ones, but again this is a
+long-run pattern, not tied specifically to Biden.
+
+### Conclusion
+
+The CES level data show strong recovery and job growth under Biden, not collapse.
+The revision data reflect long-standing structural features of CES estimation,
+not a broken system.
+
+**PolitiFact Rating: Mostly False.**
+
+---
+
+## FACT CHECK 2
+### Claim: “The BLS job numbers are rigged to benefit Democrats.”
+
+To support this claim, Democrats would need to consistently receive more positive
+revisions or larger upward corrections than Republicans.
+
+### Evidence from Revision Behavior
+
+The three hypothesis tests show:
+
+- The mean revision is slightly positive overall.
+- The proportion of positive revisions is above 50%.
+- These patterns recur across multiple decades.
+
+However, these tendencies apply to all administrations.
+
+### What the data show:
+
+- Both Democrats and Republicans experience a mixture of upward and downward revisions.
+- Revision spikes align with recessions (1982, 2008, 2020), not party changes.
+- Revision percentages have declined over time, indicating improved data collection,
+  not political manipulation.
+- Monthly variability reflects administrative cycles and seasonal adjustment processes.
+
+### Why the claim fails
+
+To demonstrate "rigging," we would expect a clear statistical advantage for Democratic
+presidents in revision size or frequency. When revisions are examined by party, there
+is no consistent advantage. The long-run slight upward bias applies across parties and
+decades.
+
+### Conclusion
+
+There is no empirical evidence that CES revisions systematically benefit Democrats.
+Revisions behave like a normal statistical correction process driven by economic 
+volatility, seasonality, and data collection—not partisanship.
+
+**PolitiFact Rating: Pants on Fire.** 
